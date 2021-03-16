@@ -1,0 +1,8 @@
+wheel
+twine
+setuptools-scm
+pylint 
+pylint-gitlab 
+autopep8 
+mypy 
+coverage

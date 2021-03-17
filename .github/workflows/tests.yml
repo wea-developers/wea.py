@@ -23,10 +23,7 @@ jobs:
           pip install pylint mypy coverage pytest parameterized julia
       - name: Analysing the code with pylint
         run: |
-          pylint `ls -R|grep .py$|xargs`
-      - name: Analysing the code with pylint
-        run: |
-          pylint --exit-zero -disable=all --enable=similarities,unused-variable,unused-import,superfluous-parens src > pylint.json
+          pylint src
       - name: Run pytests with coverage
         run: |
           coverage run --source=src -m pytest --junitxml=results.xml tests/

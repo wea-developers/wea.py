@@ -26,26 +26,26 @@ import struct
 from datautils.utils import roundup, checkdims
 
 
-_julia_wa_magic = np.uint32(0x57412D31)
-_julia_wa_align = 64
-_julia_wa_types = \
-    ((1, np.dtype('int8'),       "signed 8-bit integer"),
-     (2, np.dtype('uint8'),      "unsigned 8-bit integer"),
-     (3, np.dtype('int16'),      "signed 16-bit integer"),
-     (4, np.dtype('uint16'),     "unsigned 16-bit integer"),
-     (5, np.dtype('int32'),      "signed 32-bit integer"),
-     (6, np.dtype('uint32'),     "unsigned 32-bit integer"),
-     (7, np.dtype('int64'),      "signed 64-bit integer"),
-     (8, np.dtype('uint64'),     "unsigned 64-bit integer"),
-     (9, np.dtype('float32'),    "32-bit floating-point"),
-     (10, np.dtype('float64'),   "64-bit floating-point"),
+_JULIA_WA_MAGIC = np.uint32(0x57412D31)
+_JULIA_WA_AGLIGN = 64
+_JULIA_WA_TYPES = \
+    ((1, np.dtype('int8'), "signed 8-bit integer"),
+     (2, np.dtype('uint8'), "unsigned 8-bit integer"),
+     (3, np.dtype('int16'), "signed 16-bit integer"),
+     (4, np.dtype('uint16'), "unsigned 16-bit integer"),
+     (5, np.dtype('int32'), "signed 32-bit integer"),
+     (6, np.dtype('uint32'), "unsigned 32-bit integer"),
+     (7, np.dtype('int64'), "signed 64-bit integer"),
+     (8, np.dtype('uint64'), "unsigned 64-bit integer"),
+     (9, np.dtype('float32'), "32-bit floating-point"),
+     (10, np.dtype('float64'), "64-bit floating-point"),
      # Placeholder - Julia's Complex32 is not supported
      (11, None, "64-bit complex"),
      (12, np.dtype('complex64'), "128-bit complex"))
-_julia_wa_idents = {T: i for (i, T, _) in _julia_wa_types}
-_julia_wa_etypes = [T for (i, T, str) in _julia_wa_types]
-_julia_wa_header_format = 'I2Hq'
-_julia_wa_header_sizeof = struct.calcsize(_julia_wa_header_format)
+_JULIA_WA_IDENTS = {T: i for (i, T, _) in _JULIA_WA_TYPES}
+_JULIA_WA_ELTYPES = [T for (i, T, str) in _JULIA_WA_TYPES]
+_JULIA_WA_HEADER_FORMAT = 'I2Hq'
+_JULIA_WA_HEADER_SIZEOF = struct.calcsize(_JULIA_WA_HEADER_FORMAT)
 
 
 def _write_header(buf: Union[memoryview, bytearray],
@@ -64,17 +64,17 @@ def _write_header(buf: Union[memoryview, bytearray],
     :rtype: int
     """
     size, off, N = _calculate_size(shape, dtype)
-    if dtype not in _julia_wa_idents:
+    if dtype not in _JULIA_WA_IDENTS:
         raise TypeError(f'Type {dtype} is not supported for WrappedArray')
-    eltype = _julia_wa_idents[dtype]
+    eltype = _JULIA_WA_IDENTS[dtype]
     if len(buf) < size:
         raise MemoryError(
             "Shared memory buffer is too small for wrapped array")
-    struct.pack_into(_julia_wa_header_format, buf,
-                     0, np.uint32(_julia_wa_magic), np.uint16(eltype),
+    struct.pack_into(_JULIA_WA_HEADER_FORMAT, buf,
+                     0, np.uint32(_JULIA_WA_MAGIC), np.uint16(eltype),
                      np.uint16(N), np.int64(off))
     for i, v in enumerate(shape):
-        struct.pack_into('q', buf, int(_julia_wa_header_sizeof + i *
+        struct.pack_into('q', buf, int(_JULIA_WA_HEADER_SIZEOF + i *
                                        np.dtype('int64').itemsize),
                          np.int64(v))
     return int(off)
@@ -90,10 +90,10 @@ def _read_header(buf: Union[memoryview, bytearray]):
      to the start of the array, Array shape
     :rtype: Tuple[int, int, int, int, tuple]
     """
-    magic, eltype, N, off = struct.unpack_from(_julia_wa_header_format, buf)
+    magic, eltype, N, off = struct.unpack_from(_JULIA_WA_HEADER_FORMAT, buf)
     dims = struct.unpack_from(
         "".join(['q' for _ in range(0, N, 1)]), buf,
-        int(_julia_wa_header_sizeof))
+        int(_JULIA_WA_HEADER_SIZEOF))
     return magic, eltype, N, off, tuple(dims)
 
 
@@ -106,9 +106,9 @@ def _wrapped_exchange_array_header_size(N: int):
     :return: Up-rounded size
     :rtype: int
     """
-    add = _julia_wa_header_sizeof + N * \
+    add = _JULIA_WA_HEADER_SIZEOF + N * \
         np.dtype("int64").itemsize
-    cld = roundup(add, _julia_wa_align)
+    cld = roundup(add, _JULIA_WA_AGLIGN)
     return int(cld)
 
 

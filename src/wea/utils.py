@@ -1,3 +1,6 @@
+"""
+Some helper utilities
+"""
 import numpy as np
 
 

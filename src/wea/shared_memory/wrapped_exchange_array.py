@@ -1,9 +1,12 @@
+"""
+Wrapped Exchange Array implementation for shared memory
+"""
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
 import numpy as np
 import logging
 from ..meta_data import _calculate_size, _write_header, _read_header, \
-    _julia_wa_header_sizeof, _julia_wa_magic, _julia_wa_etypes
+    _JULIA_WA_HEADER_SIZEOF, _JULIA_WA_MAGIC, _JULIA_WA_ELTYPES
 
 _logger = logging.getLogger(__name__)
 
@@ -129,14 +132,14 @@ def _attach_shared_array(name: str):
     :rtype: Tuple
     """
     shm = shared_memory.SharedMemory(name=name, create=False)
-    if shm.size < _julia_wa_header_sizeof:
+    if shm.size < _JULIA_WA_HEADER_SIZEOF:
         raise MemoryError("Shared memory is smaller than header size")
     magic, eltype, _, off, dims = _read_header(shm.buf)
-    if magic != _julia_wa_magic:
+    if magic != _JULIA_WA_MAGIC:
         raise TypeError(f'WrappedArray version {magic} not supported')
-    if eltype > len(_julia_wa_etypes):
+    if eltype > len(_JULIA_WA_ELTYPES):
         raise TypeError("Provided eltype not found in supported list")
     if eltype == 11:
         raise TypeError("Complex32 is not supported by numpy")
-    type = _julia_wa_etypes[eltype-1]
+    type = _JULIA_WA_ELTYPES[eltype-1]
     return shm, off, type, dims

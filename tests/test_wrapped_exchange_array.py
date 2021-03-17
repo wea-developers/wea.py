@@ -29,8 +29,8 @@ def create_buffer() -> Tuple[bytearray, tuple, int, int, np.dtype, bytes]:
     num = checkdims(dims)
     off = wa._wrapped_array_header_size(len(dims))
     buf = bytearray(int(off) + int(num * type.itemsize))
-    header = struct.pack(f'{wa._julia_wa_header_format}qq',
-                         wa._julia_wa_magic, np.uint16(10),
+    header = struct.pack(f'{wa._JULIA_WA_HEADER_FORMAT}qq',
+                         wa._JULIA_WA_MAGIC, np.uint16(10),
                          np.uint16(N), np.int64(128), np.int64(dims[0]),
                          np.int64(dims[1]))
     return buf, dims, N, off, type, header
@@ -66,19 +66,19 @@ class TestWrappedArray(unittest.TestCase):
         dims = (5, 2)
         N = len(dims)
         off = wa._wrapped_array_header_size(N)
-        self.assertEqual(off, 2 * wa._julia_wa_align)
+        self.assertEqual(off, 2 * wa._JULIA_WA_AGLIGN)
 
     def test_write_header(self):
         buf, dims, _, _, type, exp_header = create_buffer()
         wa._write_header(buf, type, dims)
-        header = bytes(buf[:wa._julia_wa_header_sizeof])
-        self.assertEqual(header, exp_header[:wa._julia_wa_header_sizeof])
+        header = bytes(buf[:wa._JULIA_WA_HEADER_SIZEOF])
+        self.assertEqual(header, exp_header[:wa._JULIA_WA_HEADER_SIZEOF])
 
     def test_read_header(self):
         buf, exp_dims, exp_N, exp_off, _, exp_header = create_buffer()
-        buf[:wa._julia_wa_header_sizeof] = exp_header
+        buf[:wa._JULIA_WA_HEADER_SIZEOF] = exp_header
         magic, eltype, N, off, dims = wa._read_header(buf)
-        self.assertEqual(magic, wa._julia_wa_magic)
+        self.assertEqual(magic, wa._JULIA_WA_MAGIC)
         self.assertEqual(eltype, 10)
         self.assertEqual(N, exp_N)
         self.assertEqual(off, exp_off)
@@ -99,7 +99,7 @@ class TestWrappedArray(unittest.TestCase):
                        buffer=shm.buf[off:], order='F')
         compare = self._wa[:] == a[:]
         self.assertTrue(compare.all())
-        self.assertEqual(magic, wa._julia_wa_magic)
+        self.assertEqual(magic, wa._JULIA_WA_MAGIC)
         self.assertEqual(eltype, 10)
         self.assertEqual(N, len(data.shape))
         self.assertEqual(dims, data.shape)

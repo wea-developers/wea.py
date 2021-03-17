@@ -1,3 +1,6 @@
+"""
+Wrapped Exchange Array package
+"""
 from .shared_memory import WrappedExchangeArray,\
     create_shared_array, attach_shared_array
 

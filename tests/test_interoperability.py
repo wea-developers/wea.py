@@ -5,7 +5,7 @@ import logging
 from numpy.core.defchararray import lower
 import pytest
 from parameterized import parameterized
-from src.wea.shared_memory import WrappedExchangeArray, create_shared_array, \
+from src.wea.shared_memory import SharedExchangeArray, create_shared_array, \
     attach_shared_array
 
 

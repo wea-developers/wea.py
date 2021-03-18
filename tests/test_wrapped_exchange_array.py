@@ -6,10 +6,9 @@ import numpy as np
 import logging
 import pytest
 import src.wea.meta_data as meta
-import src.wea.shared_memory.wrapped_exchange_array as wa
 from parameterized import parameterized
 from src.wea.utils import checkdims
-from src.wea.shared_memory import WrappedExchangeArray, create_shared_array, \
+from src.wea.shared_memory import SharedExchangeArray, create_shared_array, \
     attach_shared_array
 
 
@@ -40,7 +39,7 @@ def create_buffer() -> Tuple[bytearray, tuple, int, int, np.dtype, bytes]:
 class TestWrappedArray(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestWrappedArray, self).__init__(*args, **kwargs)
-        self._wa: WrappedExchangeArray = None
+        self._wa: SharedExchangeArray = None
         self._shm_name = '/test-awesome-1'
 
     def setUp(self) -> None:
@@ -58,7 +57,7 @@ class TestWrappedArray(unittest.TestCase):
     def test_calculate_size(self):
         dims = (5, 2)
         type = np.dtype('float64')
-        size, off, N = wa._calculate_size(dims, type)
+        size, off, N = meta._calculate_size(dims, type)
         self.assertEqual(size, 208)
         self.assertEqual(off, 128)
         self.assertEqual(N, len(dims))
@@ -95,12 +94,12 @@ class TestWrappedArray(unittest.TestCase):
             self._shm_name, data.dtype, data.shape)
         self._wa[:] = data[:]
         shm = shared_memory.SharedMemory(self._shm_name, create=False)
-        magic, eltype, N, off, dims = wa._read_header(shm.buf)
+        magic, eltype, N, off, dims = meta._read_header(shm.buf)
         a = np.ndarray(shape=data.shape, dtype=data.dtype,
                        buffer=shm.buf[off:], order='F')
         compare = self._wa[:] == a[:]
         self.assertTrue(compare.all())
-        self.assertEqual(magic, wa._JULIA_WA_MAGIC)
+        self.assertEqual(magic, meta._JULIA_WA_MAGIC)
         self.assertEqual(eltype, 10)
         self.assertEqual(N, len(data.shape))
         self.assertEqual(dims, data.shape)
@@ -112,10 +111,10 @@ class TestWrappedArray(unittest.TestCase):
     ])
     def test_attach_shared_array(self, shape):
         data = np.random.random_sample(shape)
-        size, _, _ = wa._calculate_size(data.shape, data.dtype)
+        size, _, _ = meta._calculate_size(data.shape, data.dtype)
         shm = shared_memory.SharedMemory(
             self._shm_name, create=True, size=size)
-        off = wa._write_header(shm.buf, data.dtype, data.shape)
+        off = meta._write_header(shm.buf, data.dtype, data.shape)
         a = np.ndarray(shape=data.shape, dtype=data.dtype,
                        buffer=shm.buf[off:], order='F')
         a[:] = data[:]
@@ -126,10 +125,10 @@ class TestWrappedArray(unittest.TestCase):
 
     def test_attach_shared_array_with_complex32(self):
         data = np.random.randn(10, 2)
-        size, _, _ = wa._calculate_size(data.shape, data.dtype)
+        size, _, _ = meta._calculate_size(data.shape, data.dtype)
         shm = shared_memory.SharedMemory(
             self._shm_name, create=True, size=size)
-        off = wa._write_header(shm.buf, data.dtype, data.shape)
+        off = meta._write_header(shm.buf, data.dtype, data.shape)
         struct.pack_into('H', shm.buf[4:6], 0, np.uint16(11))
         a = np.ndarray(shape=data.shape, dtype=data.dtype,
                        buffer=shm.buf[off:], order='F')

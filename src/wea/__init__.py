@@ -1,10 +1,10 @@
 """
 Wrapped Exchange Array package
 """
-from .shared_memory import WrappedExchangeArray,\
+from .shared_memory import SharedExchangeArray,\
     create_shared_array, attach_shared_array
 
-__all__ = ['__version__', 'WrappedExchangeArray',
+__all__ = ['__version__', 'SharedExchangeArray',
            'create_shared_array', 'attach_shared_array']
 
 try:

@@ -6,13 +6,14 @@ from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
 import logging
 import numpy as np
+from ..interface import WrappedExchangeArray
 from ..meta_data import _calculate_size, _write_header, _read_header, \
     _JULIA_WA_HEADER_SIZEOF, _JULIA_WA_MAGIC, _JULIA_WA_ELTYPES
 
 LOGGER = logging.getLogger(__name__)
 
 
-class WrappedExchangeArray(np.ndarray):
+class SharedExchangeArray(WrappedExchangeArray):
     """
     Shared memory Wrapped Exchange Array
 
@@ -40,7 +41,7 @@ class WrappedExchangeArray(np.ndarray):
                 kwargs[x_val] = y_val
         kwargs['buffer'] = shm.buf[off:]
         kwargs['order'] = 'F'
-        obj = super(WrappedExchangeArray, cls).__new__(cls, **kwargs)
+        obj = super(SharedExchangeArray, cls).__new__(cls, **kwargs)
         obj._mem = shm
         return obj
 
@@ -115,7 +116,7 @@ def create_shared_array(name: str, dtype: np.dtype,
     :return: Returns a WrappedArray instance
     :rtype: WrappedArray
     """
-    return WrappedExchangeArray(name, True, dtype=dtype, shape=shape)
+    return SharedExchangeArray(name, True, dtype=dtype, shape=shape)
 
 
 def attach_shared_array(name: str):
@@ -127,7 +128,7 @@ def attach_shared_array(name: str):
     :return: Returns a WrappedArray instance
     :rtype: WrappedArray
     """
-    return WrappedExchangeArray(name, False)
+    return SharedExchangeArray(name, False)
 
 
 def _create_shared_array(name: str, dtype: np.dtype,

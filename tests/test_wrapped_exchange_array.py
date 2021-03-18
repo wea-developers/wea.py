@@ -5,9 +5,10 @@ import struct
 import numpy as np
 import logging
 import pytest
-import datautils.wrapped_array as wa
+import src.wea.meta_data as meta
+import src.wea.shared_memory.wrapped_exchange_array as wa
 from parameterized import parameterized
-from datautils.utils import checkdims
+from src.wea.utils import checkdims
 from src.wea.shared_memory import WrappedExchangeArray, create_shared_array, \
     attach_shared_array
 
@@ -27,10 +28,10 @@ def create_buffer() -> Tuple[bytearray, tuple, int, int, np.dtype, bytes]:
     dims = (5, 2)
     N = len(dims)
     num = checkdims(dims)
-    off = wa._wrapped_array_header_size(len(dims))
+    off = meta._wrapped_exchange_array_header_size(len(dims))
     buf = bytearray(int(off) + int(num * type.itemsize))
-    header = struct.pack(f'{wa._JULIA_WA_HEADER_FORMAT}qq',
-                         wa._JULIA_WA_MAGIC, np.uint16(10),
+    header = struct.pack(f'{meta._JULIA_WA_HEADER_FORMAT}qq',
+                         meta._JULIA_WA_MAGIC, np.uint16(10),
                          np.uint16(N), np.int64(128), np.int64(dims[0]),
                          np.int64(dims[1]))
     return buf, dims, N, off, type, header
@@ -65,20 +66,20 @@ class TestWrappedArray(unittest.TestCase):
     def test_wrapped_array_header_size(self):
         dims = (5, 2)
         N = len(dims)
-        off = wa._wrapped_array_header_size(N)
-        self.assertEqual(off, 2 * wa._JULIA_WA_AGLIGN)
+        off = meta._wrapped_exchange_array_header_size(N)
+        self.assertEqual(off, 2 * meta._JULIA_WA_AGLIGN)
 
     def test_write_header(self):
         buf, dims, _, _, type, exp_header = create_buffer()
-        wa._write_header(buf, type, dims)
-        header = bytes(buf[:wa._JULIA_WA_HEADER_SIZEOF])
-        self.assertEqual(header, exp_header[:wa._JULIA_WA_HEADER_SIZEOF])
+        meta._write_header(buf, type, dims)
+        header = bytes(buf[:meta._JULIA_WA_HEADER_SIZEOF])
+        self.assertEqual(header, exp_header[:meta._JULIA_WA_HEADER_SIZEOF])
 
     def test_read_header(self):
         buf, exp_dims, exp_N, exp_off, _, exp_header = create_buffer()
-        buf[:wa._JULIA_WA_HEADER_SIZEOF] = exp_header
-        magic, eltype, N, off, dims = wa._read_header(buf)
-        self.assertEqual(magic, wa._JULIA_WA_MAGIC)
+        buf[:meta._JULIA_WA_HEADER_SIZEOF] = exp_header
+        magic, eltype, N, off, dims = meta._read_header(buf)
+        self.assertEqual(magic, meta._JULIA_WA_MAGIC)
         self.assertEqual(eltype, 10)
         self.assertEqual(N, exp_N)
         self.assertEqual(off, exp_off)

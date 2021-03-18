@@ -21,9 +21,9 @@ IN THE SOFTWARE.
 """
 
 from typing import Union
-import numpy as np
 import struct
-from datautils.utils import roundup, checkdims
+import numpy as np
+from .utils import roundup, checkdims
 
 
 _JULIA_WA_MAGIC = np.uint32(0x57412D31)
@@ -63,7 +63,7 @@ def _write_header(buf: Union[memoryview, bytearray],
     :return: Offset to the start of the array
     :rtype: int
     """
-    size, off, N = _calculate_size(shape, dtype)
+    size, off, n_count = _calculate_size(shape, dtype)
     if dtype not in _JULIA_WA_IDENTS:
         raise TypeError(f'Type {dtype} is not supported for WrappedArray')
     eltype = _JULIA_WA_IDENTS[dtype]
@@ -72,11 +72,11 @@ def _write_header(buf: Union[memoryview, bytearray],
             "Shared memory buffer is too small for wrapped array")
     struct.pack_into(_JULIA_WA_HEADER_FORMAT, buf,
                      0, np.uint32(_JULIA_WA_MAGIC), np.uint16(eltype),
-                     np.uint16(N), np.int64(off))
-    for i, v in enumerate(shape):
-        struct.pack_into('q', buf, int(_JULIA_WA_HEADER_SIZEOF + i *
+                     np.uint16(n_count), np.int64(off))
+    for idx, val in enumerate(shape):
+        struct.pack_into('q', buf, int(_JULIA_WA_HEADER_SIZEOF + idx *
                                        np.dtype('int64').itemsize),
-                         np.int64(v))
+                         np.int64(val))
     return int(off)
 
 
@@ -90,23 +90,24 @@ def _read_header(buf: Union[memoryview, bytearray]):
      to the start of the array, Array shape
     :rtype: Tuple[int, int, int, int, tuple]
     """
-    magic, eltype, N, off = struct.unpack_from(_JULIA_WA_HEADER_FORMAT, buf)
+    magic, eltype, n_count, off = struct.unpack_from(
+        _JULIA_WA_HEADER_FORMAT, buf)
     dims = struct.unpack_from(
-        "".join(['q' for _ in range(0, N, 1)]), buf,
+        "".join(['q' for _ in range(0, n_count, 1)]), buf,
         int(_JULIA_WA_HEADER_SIZEOF))
-    return magic, eltype, N, off, tuple(dims)
+    return magic, eltype, n_count, off, tuple(dims)
 
 
-def _wrapped_exchange_array_header_size(N: int):
+def _wrapped_exchange_array_header_size(n_count: int):
     """
     Calculate the header size
 
-    :param N: Dimensions
-    :type N: int
+    :param n_count: Dimensions
+    :type n_count: int
     :return: Up-rounded size
     :rtype: int
     """
-    add = _JULIA_WA_HEADER_SIZEOF + N * \
+    add = _JULIA_WA_HEADER_SIZEOF + n_count * \
         np.dtype("int64").itemsize
     cld = roundup(add, _JULIA_WA_AGLIGN)
     return int(cld)
@@ -123,8 +124,8 @@ def _calculate_size(shape: tuple, dtype: np.dtype):
     :return: Segment size, Start offset, Dimensions
     :rtype: Tuple[int, int, int]
     """
-    N = len(shape)
+    n_count = len(shape)
     num = checkdims(shape)
-    off = _wrapped_exchange_array_header_size(N)
+    off = _wrapped_exchange_array_header_size(n_count)
     size = off + dtype.itemsize * num
-    return int(size), int(off), int(N)
+    return int(size), int(off), int(n_count)

@@ -18,19 +18,20 @@ def checkdims(dims: tuple):
     def multipy(dim: int):
         nonlocal number
         number = number * dim
-    [multipy(dim) for dim in dims]
+    for dim in dims:
+        multipy(dim)
     return int(number)
 
 
-def roundup(a: int, b: int):
+def roundup(a_val: int, b_val: int):
     """
     Calculate the biggest buffer depending on b
 
-    : param a: Parameter to check
-    : type a: int
-    : param b: Reference to check against
-    : type b: int
+    : param a_val: Parameter to check
+    : type a_val: int
+    : param b_val: Reference to check against
+    : type b_val: int
     """
-    add = a + (b - 1)
-    cld = np.ceil(add / b)*b
+    add = a_val + (b_val - 1)
+    cld = np.ceil(add / b_val)*b_val
     return int(cld)

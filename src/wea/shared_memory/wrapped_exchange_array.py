@@ -3,33 +3,40 @@ Wrapped Exchange Array implementation for shared memory
 """
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
-import numpy as np
 import logging
+import numpy as np
 from ..meta_data import _calculate_size, _write_header, _read_header, \
     _JULIA_WA_HEADER_SIZEOF, _JULIA_WA_MAGIC, _JULIA_WA_ELTYPES
 
-_logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class WrappedExchangeArray(np.ndarray):
+    """
+    Shared memory Wrapped Exchange Array
+
+    :param np: numpy type
+    :type np: numpy
+    """
     def __new__(cls, name: str, create: bool, **kwargs):
         if create is True:
             kwarg = ['dtype', 'shape']
-            for x in kwarg:
-                if x not in kwargs:
-                    raise TypeError(f'Missing {x} for creating wrapped array')
+            for x_val in kwarg:
+                if x_val not in kwargs:
+                    raise TypeError(
+                        f'Missing {x_val} for creating wrapped array')
             shm, off = _create_shared_array(
                 name, kwargs['dtype'], kwargs['shape'])
         else:
             kwarg = ['dtype', 'shape']
-            for x in kwarg:
-                if x in kwargs:
+            for x_val in kwarg:
+                if x_val in kwargs:
                     raise TypeError(
-                        f'Ignoring {x}. Is not necessary for attaching to'
+                        f'Ignoring {x_val}. Is not necessary for attaching to'
                         f'wrapped array')
-            shm, off, type, dims = _attach_shared_array(name)
-            for x, y in zip(kwarg, [type, dims]):
-                kwargs[x] = y
+            shm, off, pytype, dims = _attach_shared_array(name)
+            for x_val, y_val in zip(kwarg, [pytype, dims]):
+                kwargs[x_val] = y_val
         kwargs['buffer'] = shm.buf[off:]
         kwargs['order'] = 'F'
         obj = super(WrappedExchangeArray, cls).__new__(cls, **kwargs)
@@ -44,7 +51,7 @@ class WrappedExchangeArray(np.ndarray):
     def __enter__(self):
         return self
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_value, trace):
         self._close('close')
 
     @property
@@ -65,9 +72,8 @@ class WrappedExchangeArray(np.ndarray):
     def unlink(self) -> None:
         self._close('unlink')
 
-    def _close(self, f: str) -> None:
-        self._arr = None
-        func = getattr(self._mem, f)
+    def _close(self, action: str) -> None:
+        func = getattr(self._mem, action)
         func()
 
 
@@ -115,7 +121,7 @@ def _create_shared_array(name: str, dtype: np.dtype,
     :rtype: Tuple
     """
     size, _, _ = _calculate_size(shape, dtype)
-    _logger.info(f'Creating shared memory segment: {name}')
+    LOGGER.info(f'Creating shared memory segment: {name}')
     shm = shared_memory.SharedMemory(name=name, create=True,
                                      size=size)
     off = _write_header(shm.buf, dtype, shape)
@@ -141,5 +147,5 @@ def _attach_shared_array(name: str):
         raise TypeError("Provided eltype not found in supported list")
     if eltype == 11:
         raise TypeError("Complex32 is not supported by numpy")
-    type = _JULIA_WA_ELTYPES[eltype-1]
-    return shm, off, type, dims
+    pytype = _JULIA_WA_ELTYPES[eltype-1]
+    return shm, off, pytype, dims

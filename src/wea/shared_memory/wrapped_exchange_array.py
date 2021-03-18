@@ -1,6 +1,7 @@
 """
 Wrapped Exchange Array implementation for shared memory
 """
+# pylint: disable=W0201,W1202
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
 import logging
@@ -56,9 +57,20 @@ class WrappedExchangeArray(np.ndarray):
 
     @property
     def mem(self):
+        """
+        Return shared memory handle
+
+        :return: shared memory handle
+        :rtype: multiprocessing.shared_memory.SharedMemory
+        """
         return self._mem
 
     def reopen(self):
+        """
+        Reopen a shared memory segement
+
+        :raises FileNotFoundError: If shared memory segment was deleted
+        """
         if self._mem is not None:
             shm, off, _, _ = _attach_shared_array(self.mem.name)
             self._mem, self.data = shm, shm.buf[off:]
@@ -67,12 +79,24 @@ class WrappedExchangeArray(np.ndarray):
                 'No shared memory element set for connecting')
 
     def close(self) -> None:
+        """
+        Close shared memory segment
+        """
         self._close('close')
 
     def unlink(self) -> None:
+        """
+        Unlink shared memory segment
+        """
         self._close('unlink')
 
     def _close(self, action: str) -> None:
+        """
+        Protected wrapper function for closing or unlinking shared memory
+
+        :param action: attribute function
+        :type action: str
+        """
         func = getattr(self._mem, action)
         func()
 

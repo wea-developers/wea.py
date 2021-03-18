@@ -25,6 +25,7 @@ jobs:
       - name: Analysing the code with pylint
         run: |
           pylint src
+          if: ${{ success() || failure() }}
       - name: Run pytests with coverage
         run: |
           coverage run --source=src -m pytest --junitxml=results.xml tests/

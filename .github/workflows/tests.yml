@@ -1,6 +1,6 @@
 name: Tests
 
-on: [push]
+on: [pull_request]
 
 jobs:
   build:
@@ -24,7 +24,7 @@ jobs:
           pip install -r test-requirements.txt
       - name: Analysing the code with pylint
         run: |
-          pylint --exit-zero src
+          pylint src
       - name: Run pytests with coverage
         run: |
           coverage run --source=src -m pytest --junitxml=results.xml tests/

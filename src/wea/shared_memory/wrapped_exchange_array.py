@@ -1,7 +1,7 @@
 """
 Wrapped Exchange Array implementation for shared memory
 """
-# pylint: disable=W0201,W1202
+# pylint: disable=W0201,W1202,W1203
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
 import logging

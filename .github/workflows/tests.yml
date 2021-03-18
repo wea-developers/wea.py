@@ -25,10 +25,10 @@ jobs:
       - name: Analysing the code with pylint
         continue-on-error: true
         run: |
-          pylint src
+          pylint src/wea
       - name: Run pytests with coverage
         run: |
-          coverage run --source=src -m pytest --junitxml=results.xml tests/
+          coverage run --source=src/wea -m pytest --junitxml=results.xml tests/
       - name: Convert coverage
         run: |
           coverage xml

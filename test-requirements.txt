@@ -1,0 +1,6 @@
+julia
+pytest
+parameterized
+pylint
+mypy
+coverage

@@ -19,7 +19,7 @@ import wea
 import numpy as np
 
 ...
-wa = wea.shared_memory.create_wrapped_array('/awesome-1', np.dtype('float64'), (10, 2))
+wa = wea.shared_memory.create_shared_array('/awesome-1', np.dtype('float64'), (10, 2))
 wa[:] = my_new_data[:]
 ...
 ```
@@ -34,7 +34,7 @@ import numpy as np
 
 type = np.dtype('float64')
 dims = (10, 2)
-wa = wea.shared_memory.create_wrapped_array('/awesome-1', type, dims)
+wa = wea.shared_memory.create_shared_array('/awesome-1', type, dims)
 wa[:] = np.random.randn(dims[0], dims[1])
 ```
 
@@ -48,7 +48,7 @@ If a wrapped exchange array was already created, you can attach to it simply by
 import wea
 import numpy as np
 
-wa = wea.shared_memory.attach_wrapped_array('/awesome-1')
+wa = wea.shared_memory.attach_shared_array('/awesome-1')
 wa[:] = np.random.randn(dims[0], dims[1])
 ```
 

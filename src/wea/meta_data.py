@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
 
-from typing import Union
+from typing import Union, Tuple
 import struct
 import numpy as np
 from .utils import roundup, checkdims
@@ -39,9 +39,8 @@ _JULIA_WA_TYPES = \
      (8, np.dtype('uint64'), "unsigned 64-bit integer"),
      (9, np.dtype('float32'), "32-bit floating-point"),
      (10, np.dtype('float64'), "64-bit floating-point"),
-     # Placeholder - Julia's Complex32 is not supported
-     (11, None, "64-bit complex"),
-     (12, np.dtype('complex64'), "128-bit complex"))
+     (11, np.dtype('complex64'), "64-bit complex"),
+     (12, np.dtype('complex128'), "128-bit complex"))
 _JULIA_WA_IDENTS = {T: i for (i, T, _) in _JULIA_WA_TYPES}
 _JULIA_WA_ELTYPES = [T for (i, T, str) in _JULIA_WA_TYPES]
 _JULIA_WA_HEADER_FORMAT = 'I2Hq'
@@ -129,3 +128,27 @@ def _calculate_size(shape: tuple, dtype: np.dtype):
     off = _wrapped_exchange_array_header_size(n_count)
     size = off + dtype.itemsize * num
     return int(size), int(off), int(n_count)
+
+
+def check_buffer_array(buf: Union[memoryview, bytearray]) -> Tuple:
+    """
+    Extract meta data from an exchange buffer
+
+    :param buf: Exchange buffer
+    :type buf: typing.Union[memoryview, bytearray]
+    :raises MemoryError: If buffer is smaller than expected
+    :raises TypeError: If Julia magic number is not inside
+    :raises TypeError: The dtype does not fit
+    :raises TypeError: If Complex32 is provided by Julia
+    :return: Offset, dtype and dimesions
+    :rtype: Tuple
+    """
+    if len(buf) < _JULIA_WA_HEADER_SIZEOF:
+        raise MemoryError("Shared memory is smaller than header size")
+    magic, eltype, _, off, dims = _read_header(buf)
+    if magic != _JULIA_WA_MAGIC:
+        raise TypeError(f'WrappedArray version {magic} not supported')
+    if eltype > len(_JULIA_WA_ELTYPES):
+        raise TypeError("Provided eltype not found in supported list")
+    pytype = _JULIA_WA_ELTYPES[eltype-1]
+    return off, pytype, dims

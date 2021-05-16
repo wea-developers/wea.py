@@ -5,10 +5,10 @@ Wrapped Exchange Array implementation for shared memory
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
 import logging
+import typing
 import numpy as np
 from ..interface import WrappedExchangeArray
-from ..meta_data import _calculate_size, _write_header, _read_header, \
-    _JULIA_WA_HEADER_SIZEOF, _JULIA_WA_MAGIC, _JULIA_WA_ELTYPES
+from ..meta_data import _calculate_size, _write_header, check_buffer_array
 
 LOGGER = logging.getLogger(__name__)
 
@@ -17,8 +17,8 @@ class SharedExchangeArray(WrappedExchangeArray):
     """
     Shared memory Wrapped Exchange Array
 
-    :param np: numpy type
-    :type np: numpy
+    :param np: WrappedExchangeArray type
+    :type np: WrappedExchangeArray
     """
     def __new__(cls, name: str, create: bool, **kwargs):
         if create is True:
@@ -132,7 +132,7 @@ def attach_shared_array(name: str):
 
 
 def _create_shared_array(name: str, dtype: np.dtype,
-                         shape: tuple):
+                         shape: tuple) -> typing.Tuple:
     """
     Create a new WrappedArray in shared memory
 
@@ -146,14 +146,14 @@ def _create_shared_array(name: str, dtype: np.dtype,
     :rtype: Tuple
     """
     size, _, _ = _calculate_size(shape, dtype)
-    LOGGER.info(f'Creating shared memory segment: {name}')
+    LOGGER.debug(f'Creating shared memory segment: {name}')
     shm = shared_memory.SharedMemory(name=name, create=True,
                                      size=size)
     off = _write_header(shm.buf, dtype, shape)
     return shm, off
 
 
-def _attach_shared_array(name: str):
+def _attach_shared_array(name: str) -> typing.Tuple:
     """
     Attach to an existing WrappedExchangeArray
 
@@ -163,14 +163,4 @@ def _attach_shared_array(name: str):
     :rtype: Tuple
     """
     shm = shared_memory.SharedMemory(name=name, create=False)
-    if shm.size < _JULIA_WA_HEADER_SIZEOF:
-        raise MemoryError("Shared memory is smaller than header size")
-    magic, eltype, _, off, dims = _read_header(shm.buf)
-    if magic != _JULIA_WA_MAGIC:
-        raise TypeError(f'WrappedArray version {magic} not supported')
-    if eltype > len(_JULIA_WA_ELTYPES):
-        raise TypeError("Provided eltype not found in supported list")
-    if eltype == 11:
-        raise TypeError("Complex32 is not supported by numpy")
-    pytype = _JULIA_WA_ELTYPES[eltype-1]
-    return shm, off, pytype, dims
+    return shm, *check_buffer_array(shm.buf)

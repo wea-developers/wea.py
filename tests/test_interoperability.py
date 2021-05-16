@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class TestWrappedExchangeArray(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestWrappedExchangeArray, self).__init__(*args, **kwargs)
-        self._wa: WrappedExchangeArray = None
+        self._wa: SharedExchangeArray = None
         self._shm_name = '/test-awesome-1'
         self._dims = (5, 2)
 

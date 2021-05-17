@@ -29,11 +29,11 @@ def test_create_buffered_array(shape):
     (10, 1)
 ])
 def test_load_buffered_array(shape):
-    data = np.asfortranarray(np.random.random_sample(shape))
+    data = np.random.random_sample(shape)
     size, _, _ = meta._calculate_size(data.shape, data.dtype)
     buf = bytearray(size)
     off = meta._write_header(buf, data.dtype, data.shape)
-    buf[off:] = data.data
+    buf[off:] = data.tobytes(order='F')
     wa = load_buffered_array(buf)
     compare = wa[:] == data[:]
     assert compare.all()
@@ -48,4 +48,4 @@ def test_BufferedExchangeArray_attributes():
     compare = wa[:] == data[:]
     assert compare.all()
     assert isinstance(wa.exchange_buffer, bytearray)
-    assert wa.exchange_buffer[128:] == bytearray(data.tobytes())
+    assert wa.exchange_buffer[128:] == bytearray(data.data)

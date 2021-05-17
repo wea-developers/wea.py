@@ -65,7 +65,7 @@ class BufferedExchangeArray(WrappedExchangeArray):
         """
         buf = bytearray(self._exchange_buffer_size)
         buf[:self._exchange_buffer_offset] = self._exchange_buffer_header
-        buf[self._exchange_buffer_offset:] = self.data
+        buf[self._exchange_buffer_offset:] = self.data.tobytes(order='F')
         return buf
 
 

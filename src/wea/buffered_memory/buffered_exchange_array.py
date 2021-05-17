@@ -25,6 +25,7 @@ class BufferedExchangeArray(WrappedExchangeArray):
         kwarg = ['dtype', 'shape']
         if 'exchange_buffer' in kwargs:
             buffer = kwargs['exchange_buffer']
+            size = len(buffer)
             off, pytype, dims = _load_buffered_array(buffer)
             for x_val, y_val in zip(kwarg, [pytype, dims]):
                 kwargs[x_val] = y_val
@@ -34,23 +35,25 @@ class BufferedExchangeArray(WrappedExchangeArray):
                 if x_val not in kwargs:
                     raise TypeError(
                         f'Missing {x_val} for creating wrapped array')
-                buffer, off = _create_buffered_array(
+                buffer, off, size = _create_buffered_array(
                     kwargs['dtype'], kwargs['shape'])
         kwargs['buffer'] = buffer[off:]
         kwargs['order'] = 'F'
         obj = super(BufferedExchangeArray, cls).__new__(cls, **kwargs)
-        obj._exchange_buffer = buffer
-        obj._header = buffer[:off]
-        obj._offset = off
+        obj._exchange_buffer_offset = off
+        obj._exchange_buffer_size = size
+        obj._exchange_buffer_header = buffer[:off]
         return obj
 
     def __array_finalize__(self, obj):
         if obj is None:
             return
-        self._exchange_buffer: BufferedExchangeArray = getattr(
-            obj, '_exchange_buffer', None)
-        self._offset: BufferedExchangeArray = getattr(
-            obj, '_offset', None)
+        self._exchange_buffer_header: bytearray = getattr(
+            obj, '_exchange_buffer_header', None)
+        self._exchange_buffer_offset: int = getattr(
+            obj, '_exchange_buffer_offset', None)
+        self._exchange_buffer_size: int = getattr(
+            obj, '_exchange_buffer_size', None)
 
     @property
     def exchange_buffer(self) -> bytearray:
@@ -60,8 +63,9 @@ class BufferedExchangeArray(WrappedExchangeArray):
         :return: Array data with meta information
         :rtype: bytearray
         """
-        buf = self._exchange_buffer
-        buf[self._offset:] = self.data
+        buf = bytearray(self._exchange_buffer_size)
+        buf[:self._exchange_buffer_offset] = self._exchange_buffer_header
+        buf[self._exchange_buffer_offset:] = self.data
         return buf
 
 
@@ -102,7 +106,7 @@ def _create_buffered_array(dtype: np.dtype, shape: tuple):
     LOGGER.debug(f'Creating bytes buffer with size {size}')
     buf = bytearray(size)
     off = _write_header(buf, dtype, shape)
-    return buf, off
+    return buf, off, size
 
 
 def _load_buffered_array(buf: typing.Union[memoryview, bytearray]):

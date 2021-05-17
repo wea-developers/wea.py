@@ -21,7 +21,7 @@ def test_create_buffered_array(shape):
     assert N == len(data.shape)
     assert dims == data.shape
     assert off == 128
-    assert wa.exchange_buffer[off:] == bytearray(data.data)
+    assert wa.exchange_buffer[off:] == bytearray(data.tobytes(order='F'))
 
 
 @pytest.mark.parametrize('shape', [
@@ -38,7 +38,20 @@ def test_load_buffered_array(shape):
     compare = wa[:] == data[:]
     assert compare.all()
     assert off == 128
-    assert wa.exchange_buffer[off:] == bytearray(data.data)
+    assert wa.exchange_buffer[off:] == bytearray(data.tobytes(order='F'))
+
+
+@pytest.mark.parametrize('shape', [
+    (10, 2),
+    (10, 1)
+])
+def test_full_loop(shape):
+    data = np.random.random_sample(shape)
+    wa = create_buffered_array(data.dtype, data.shape)
+    wa[:] = data[:]
+    wr = load_buffered_array(wa.exchange_buffer)
+    compare = wa[:] == wr[:]
+    assert compare.all()
 
 
 def test_BufferedExchangeArray_attributes():
@@ -48,4 +61,4 @@ def test_BufferedExchangeArray_attributes():
     compare = wa[:] == data[:]
     assert compare.all()
     assert isinstance(wa.exchange_buffer, bytearray)
-    assert wa.exchange_buffer[128:] == bytearray(data.data)
+    assert wa.exchange_buffer[128:] == bytearray(data.tobytes(order='F'))

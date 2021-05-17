@@ -72,6 +72,19 @@ class TestWrappedArray(unittest.TestCase):
         self.assertTrue(compare.all())
         self.assertEqual(off, 128)
 
+    @parameterized.expand([
+        ((10, 2),),
+        ((10, 1),)
+    ])
+    def test_full_loop(self, shape):
+        data = np.random.random_sample(shape)
+        self._wa = create_shared_array(
+            self._shm_name, data.dtype, data.shape)
+        self._wa[:] = data[:]
+        wa = attach_shared_array(self._shm_name)
+        compare = self._wa[:] == wa[:]
+        self.assertTrue(compare.all())
+
     def test_WrappedArray_attributes(self):
         data = np.random.randn(10, 2)
         self._wa = create_shared_array(

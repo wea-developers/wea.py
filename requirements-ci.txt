@@ -4,3 +4,4 @@ parameterized
 pylint
 mypy
 coverage
+-r requirements.txt

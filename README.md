@@ -24,7 +24,7 @@ wa[:] = my_new_data[:]
 ...
 ```
 
-### Creating a shared memory segement
+### Creating a shared memory segment
 
 In order to create a new shared memory segment, use the following snippet
 
@@ -55,3 +55,48 @@ wa[:] = np.random.randn(dims[0], dims[1])
 The metadata of the array are stored in the shared memory header segment and will be retrieved for the numpy array creation.
 
 If attaching was not possible because the segment does not exist so far, a `FileNotFoundError` exception will be thrown.
+
+## Bytearray buffer memory
+
+```python
+import wea
+import numpy as np
+
+...
+wa = wea.buffered_memory.create_buffered_array(np.dtype('float64'), (10, 2))
+wa[:] = my_new_data[:]
+buf = wa.exchange buffer
+share(buf) # where share calls your prefered communication protocol
+...
+```
+
+### Creating a buffered memory segment
+
+In order to create a new buffered memory segment, use the following snippet
+
+```python
+import wea
+import numpy as np
+
+type = np.dtype('float64')
+dims = (10, 2)
+wa = wea.buffered_memory.create_buffered_array(type, dims)
+wa[:] = np.random.randn(dims[0], dims[1])
+buf: bytearray = wa.exchange_buffer
+```
+
+Actually it copies the content from the numpy array into the buffer. Thus, the current behavior is like a deep copy.
+
+### Loading from an existing buffered memory segment
+
+If a wrapped exchange array was already created, you can load from it simply by
+
+```python
+import wea
+import numpy as np
+
+buf: bytearray = receive() # where receive via your prefered communication protocol
+wa = wea.buffered_memory.load_buffered_array(buf)
+```
+
+The metadata of the array are stored in the buffered memory header segment and will be retrieved for the numpy array creation.

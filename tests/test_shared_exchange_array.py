@@ -5,6 +5,9 @@ import struct
 import numpy as np
 import logging
 import pytest
+import sys
+if sys.platform == 'win32':
+    import random
 import src.wea.meta_data as meta
 from parameterized import parameterized
 from src.wea.utils import checkdims
@@ -23,7 +26,13 @@ class TestWrappedArray(unittest.TestCase):
 
     def setUp(self) -> None:
         super(TestWrappedArray, self).setUp()
-        pass
+        if sys.platform == 'win32':
+            self._shm_name = f'/test-awesome-{random.randrange(100)}'
+        try:
+            shm = shared_memory.SharedMemory(self._shm_name, create=False)
+            shm.unlink()
+        except FileNotFoundError:
+            pass
 
     def tearDown(self) -> None:
         super(TestWrappedArray, self).tearDown()

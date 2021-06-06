@@ -1,8 +1,14 @@
 # wea.py
 
-The Wrapped Exchange Array is a convenient way in order to exchange array data easily via processes or remote nodes. Inspired and adopted partly from Julia’s [InterProcessCommunication](https://github.com/emmt/InterProcessCommunication.jl) WrappedArray.
+## What is wea?
+
+Giving the acronym a meaning - wea stands for Wrapped Exchange Array. If you want to share array-packed data with different processes, remote nodes or different language executables ( yes, that's the vision ), wea is an lean, lightweight and convenient alternative to [Protocol Buffers](https://developers.google.com/protocol-buffers) and Co.
+
+It's inspired and adopted partly from Julia’s [InterProcessCommunication](https://github.com/emmt/InterProcessCommunication.jl) WrappedArray.
 
 The wrapped exchange array can be accessed like a numpy array because under the hood, numpy is applied.
+
+If this sounds good to you, just give it a try.
 
 ## Getting started
 

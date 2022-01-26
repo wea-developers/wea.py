@@ -4,10 +4,9 @@ from multiprocessing import shared_memory
 
 import numpy as np
 import pytest
-from numpy.core.defchararray import lower
 from parameterized import parameterized
 
-from src.wea.shared_memory import (
+from wea.shared_memory import (
     SharedExchangeArray,
     attach_shared_array,
     create_shared_array,

@@ -1,10 +1,8 @@
-import struct
-
 import numpy as np
 import pytest
 
-import src.wea.meta_data as meta
-from src.wea import create_buffered_array, load_buffered_array
+import wea.meta_data as meta
+from wea import create_buffered_array, load_buffered_array
 
 
 @pytest.mark.parametrize("shape", [(10, 2), (10, 1)])

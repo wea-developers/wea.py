@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-import src.wea.meta_data as meta
+import wea.meta_data as meta
 
 from .helper import create_buffer
 

@@ -3,8 +3,8 @@ from typing import Tuple
 
 import numpy as np
 
-import src.wea.meta_data as meta
-from src.wea.utils import checkdims
+import wea.meta_data as meta
+from wea.utils import checkdims
 
 
 def create_buffer() -> Tuple[bytearray, tuple, int, int, np.dtype, bytes]:

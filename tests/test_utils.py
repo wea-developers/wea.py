@@ -1,6 +1,6 @@
 import unittest
 
-from src.wea.utils import checkdims, roundup
+from wea.utils import checkdims, roundup
 
 
 class TestUtils(unittest.TestCase):

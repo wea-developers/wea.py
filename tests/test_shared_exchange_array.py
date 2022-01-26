@@ -3,23 +3,20 @@ import struct
 import sys
 import unittest
 from multiprocessing import shared_memory
-from typing import Tuple
 
 import numpy as np
-import pytest
 
 if sys.platform == "win32":
     import random
 
 from parameterized import parameterized
 
-import src.wea.meta_data as meta
-from src.wea.shared_memory import (
+import wea.meta_data as meta
+from wea.shared_memory import (
     SharedExchangeArray,
     attach_shared_array,
     create_shared_array,
 )
-from src.wea.utils import checkdims
 
 logger = logging.getLogger(__name__)
 

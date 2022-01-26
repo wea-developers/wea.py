@@ -73,7 +73,7 @@ import numpy as np
 ...
 wa = wea.buffered_memory.create_buffered_array(np.dtype('float64'), (10, 2))
 wa[:] = my_new_data[:]
-buf = wa.exchange buffer
+buf = wa.exchange_buffer
 share(buf) # where share calls your prefered communication protocol
 ...
 ```

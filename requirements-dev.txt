@@ -1,0 +1,5 @@
+pytest
+julia
+parameterized
+tox
+-e .

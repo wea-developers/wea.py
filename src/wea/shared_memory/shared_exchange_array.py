@@ -1,12 +1,15 @@
 """
 Wrapped Exchange Array implementation for shared memory
 """
+import logging
+import typing
+
 # pylint: disable=W0201,W1202,W1203
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
-import logging
-import typing
+
 import numpy as np
+
 from ..interface import WrappedExchangeArray
 from ..meta_data import _calculate_size, _write_header, check_buffer_array
 
@@ -20,27 +23,27 @@ class SharedExchangeArray(WrappedExchangeArray):
     :param np: WrappedExchangeArray type
     :type np: WrappedExchangeArray
     """
+
     def __new__(cls, name: str, create: bool, **kwargs):
         if create is True:
-            kwarg = ['dtype', 'shape']
+            kwarg = ["dtype", "shape"]
             for x_val in kwarg:
                 if x_val not in kwargs:
-                    raise TypeError(
-                        f'Missing {x_val} for creating wrapped array')
-            shm, off = _create_shared_array(
-                name, kwargs['dtype'], kwargs['shape'])
+                    raise TypeError(f"Missing {x_val} for creating wrapped array")
+            shm, off = _create_shared_array(name, kwargs["dtype"], kwargs["shape"])
         else:
-            kwarg = ['dtype', 'shape']
+            kwarg = ["dtype", "shape"]
             for x_val in kwarg:
                 if x_val in kwargs:
                     raise TypeError(
-                        f'Ignoring {x_val}. Is not necessary for attaching to'
-                        f'wrapped array')
+                        f"Ignoring {x_val}. Is not necessary for attaching to"
+                        f"wrapped array"
+                    )
             shm, off, pytype, dims = _attach_shared_array(name)
             for x_val, y_val in zip(kwarg, [pytype, dims]):
                 kwargs[x_val] = y_val
-        kwargs['buffer'] = shm.buf[off:]
-        kwargs['order'] = 'F'
+        kwargs["buffer"] = shm.buf[off:]
+        kwargs["order"] = "F"
         obj = super(SharedExchangeArray, cls).__new__(cls, **kwargs)
         obj._mem = shm
         return obj
@@ -48,13 +51,13 @@ class SharedExchangeArray(WrappedExchangeArray):
     def __array_finalize__(self, obj):
         if obj is None:
             return
-        self._mem: SharedMemory = getattr(obj, '_mem', None)
+        self._mem: SharedMemory = getattr(obj, "_mem", None)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, trace):
-        self._close('close')
+        self._close("close")
 
     @property
     def mem(self):
@@ -76,20 +79,19 @@ class SharedExchangeArray(WrappedExchangeArray):
             shm, off, _, _ = _attach_shared_array(self.mem.name)
             self._mem, self.data = shm, shm.buf[off:]
         else:
-            raise FileNotFoundError(
-                'No shared memory element set for connecting')
+            raise FileNotFoundError("No shared memory element set for connecting")
 
     def close(self) -> None:
         """
         Close shared memory segment
         """
-        self._close('close')
+        self._close("close")
 
     def unlink(self) -> None:
         """
         Unlink shared memory segment
         """
-        self._close('unlink')
+        self._close("unlink")
 
     def _close(self, action: str) -> None:
         """
@@ -102,8 +104,7 @@ class SharedExchangeArray(WrappedExchangeArray):
         func()
 
 
-def create_shared_array(name: str, dtype: np.dtype,
-                        shape: tuple):
+def create_shared_array(name: str, dtype: np.dtype, shape: tuple):
     """
     Create a new WrappedExchangeArray in shared memory
 
@@ -131,8 +132,7 @@ def attach_shared_array(name: str):
     return SharedExchangeArray(name, False)
 
 
-def _create_shared_array(name: str, dtype: np.dtype,
-                         shape: tuple) -> typing.Tuple:
+def _create_shared_array(name: str, dtype: np.dtype, shape: tuple) -> typing.Tuple:
     """
     Create a new WrappedArray in shared memory
 
@@ -146,9 +146,8 @@ def _create_shared_array(name: str, dtype: np.dtype,
     :rtype: Tuple
     """
     size, _, _ = _calculate_size(shape, dtype)
-    LOGGER.debug(f'Creating shared memory segment: {name}')
-    shm = shared_memory.SharedMemory(name=name, create=True,
-                                     size=size)
+    LOGGER.debug(f"Creating shared memory segment: {name}")
+    shm = shared_memory.SharedMemory(name=name, create=True, size=size)
     off = _write_header(shm.buf, dtype, shape)
     return shm, off
 

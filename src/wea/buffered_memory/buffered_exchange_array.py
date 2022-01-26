@@ -64,8 +64,7 @@ class BufferedExchangeArray(WrappedExchangeArray):
         :rtype: bytearray
         """
         buf = bytearray(self._exchange_buffer_size)
-        buf[:self._exchange_buffer_offset] = self._exchange_buffer_header
-        buf[self._exchange_buffer_offset:] = self.data.tobytes(order='F')
+        buf[self._exchange_buffer_offset:] = self.tobytes(order="F")
         return buf
 
 

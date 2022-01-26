@@ -130,3 +130,12 @@ dmypy.json
 
 # Temporary version file
 _version.py
+
+# Tox result files
+flake.json
+pylint.json
+results.xml
+
+# IDE
+.vscode/
+.idea/

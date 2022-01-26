@@ -5,10 +5,11 @@ buffer memory
 # pylint: disable=W0201,W1202,W1203
 import logging
 import typing
-import numpy as np
-from ..meta_data import _calculate_size, _write_header, check_buffer_array
-from ..interface import WrappedExchangeArray
 
+import numpy as np
+
+from ..interface import WrappedExchangeArray
+from ..meta_data import _calculate_size, _write_header, check_buffer_array
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,23 +23,23 @@ class BufferedExchangeArray(WrappedExchangeArray):
     """
 
     def __new__(cls, **kwargs):
-        kwarg = ['dtype', 'shape']
-        if 'exchange_buffer' in kwargs:
-            buffer = kwargs['exchange_buffer']
+        kwarg = ["dtype", "shape"]
+        if "exchange_buffer" in kwargs:
+            buffer = kwargs["exchange_buffer"]
             size = len(buffer)
             off, pytype, dims = _load_buffered_array(buffer)
             for x_val, y_val in zip(kwarg, [pytype, dims]):
                 kwargs[x_val] = y_val
-            del kwargs['exchange_buffer']
+            del kwargs["exchange_buffer"]
         else:
             for x_val in kwarg:
                 if x_val not in kwargs:
-                    raise TypeError(
-                        f'Missing {x_val} for creating wrapped array')
+                    raise TypeError(f"Missing {x_val} for creating wrapped array")
                 buffer, off, size = _create_buffered_array(
-                    kwargs['dtype'], kwargs['shape'])
-        kwargs['buffer'] = buffer[off:]
-        kwargs['order'] = 'F'
+                    kwargs["dtype"], kwargs["shape"]
+                )
+        kwargs["buffer"] = buffer[off:]
+        kwargs["order"] = "F"
         obj = super(BufferedExchangeArray, cls).__new__(cls, **kwargs)
         obj._exchange_buffer_offset = off
         obj._exchange_buffer_size = size
@@ -49,11 +50,12 @@ class BufferedExchangeArray(WrappedExchangeArray):
         if obj is None:
             return
         self._exchange_buffer_header: bytearray = getattr(
-            obj, '_exchange_buffer_header', None)
+            obj, "_exchange_buffer_header", None
+        )
         self._exchange_buffer_offset: int = getattr(
-            obj, '_exchange_buffer_offset', None)
-        self._exchange_buffer_size: int = getattr(
-            obj, '_exchange_buffer_size', None)
+            obj, "_exchange_buffer_offset", None
+        )
+        self._exchange_buffer_size: int = getattr(obj, "_exchange_buffer_size", None)
 
     @property
     def exchange_buffer(self) -> bytearray:
@@ -64,12 +66,12 @@ class BufferedExchangeArray(WrappedExchangeArray):
         :rtype: bytearray
         """
         buf = bytearray(self._exchange_buffer_size)
-        buf[self._exchange_buffer_offset:] = self.tobytes(order="F")
+        buf[: self._exchange_buffer_offset] = self._exchange_buffer_header
+        buf[self._exchange_buffer_offset :] = self.tobytes(order="F")
         return buf
 
 
-def create_buffered_array(dtype: np.dtype, shape: tuple) \
-        -> BufferedExchangeArray:
+def create_buffered_array(dtype: np.dtype, shape: tuple) -> BufferedExchangeArray:
     """
     Create a new BufferedExchangeArray
 
@@ -79,8 +81,9 @@ def create_buffered_array(dtype: np.dtype, shape: tuple) \
     return BufferedExchangeArray(dtype=dtype, shape=shape)
 
 
-def load_buffered_array(buf: typing.Union[memoryview, bytearray]) \
-        -> BufferedExchangeArray:
+def load_buffered_array(
+    buf: typing.Union[memoryview, bytearray]
+) -> BufferedExchangeArray:
     """
     Load a BufferedExchangeArray from a exchange bytes buffer
 
@@ -102,7 +105,7 @@ def _create_buffered_array(dtype: np.dtype, shape: tuple):
     :rtype: Tuple
     """
     size, _, _ = _calculate_size(shape, dtype)
-    LOGGER.debug(f'Creating bytes buffer with size {size}')
+    LOGGER.debug(f"Creating bytes buffer with size {size}")
     buf = bytearray(size)
     off = _write_header(buf, dtype, shape)
     return buf, off, size

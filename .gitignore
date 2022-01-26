@@ -104,6 +104,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.*venv/
 env/
 venv/
 ENV/
@@ -130,3 +131,12 @@ dmypy.json
 
 # Temporary version file
 _version.py
+
+# IDE
+.vscode/
+.idea/
+
+# Tox result files
+flake.json
+pylint.json
+results.xml

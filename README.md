@@ -2,7 +2,7 @@
 
 ## What is wea?
 
-Giving the acronym a meaning - wea stands for Wrapped Exchange Array. If you want to share array-packed data with different processes, remote nodes or different language executables ( yes, that's the vision ), wea is aiming to be a lean, lightweight and convenient alternative to [Protocol Buffers](https://developers.google.com/protocol-buffers) and Co.
+Giving the package a meaning - wea stands for Wrapped Exchange Array. If you want to share array-packed data with different processes, remote nodes or different language executables ( yes, that's the vision ), wea is aiming to be a lean, lightweight and convenient alternative to [Protocol Buffers](https://developers.google.com/protocol-buffers) and Co.
 
 It's inspired and adopted partly from Julia’s [InterProcessCommunication](https://github.com/emmt/InterProcessCommunication.jl) WrappedArray.
 
@@ -73,7 +73,7 @@ import numpy as np
 ...
 wa = wea.buffered_memory.create_buffered_array(np.dtype('float64'), (10, 2))
 wa[:] = my_new_data[:]
-buf = wa.exchange buffer
+buf = wa.exchange_buffer
 share(buf) # where share calls your prefered communication protocol
 ...
 ```

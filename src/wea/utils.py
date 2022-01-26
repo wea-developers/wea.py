@@ -37,6 +37,7 @@ def checkdims(dims: tuple):
     def multipy(dim: int):
         nonlocal number
         number = number * dim
+
     for dim in dims:
         multipy(dim)
     return int(number)
@@ -52,5 +53,5 @@ def roundup(a_val: int, b_val: int):
     : type b_val: int
     """
     add = a_val + (b_val - 1)
-    cld = np.ceil(add / b_val)*b_val
+    cld = np.ceil(add / b_val) * b_val
     return int(cld)

@@ -1,5 +1,6 @@
 import unittest
-from src.wea.utils import roundup, checkdims
+
+from wea.utils import checkdims, roundup
 
 
 class TestUtils(unittest.TestCase):
@@ -34,5 +35,5 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(round, 80)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

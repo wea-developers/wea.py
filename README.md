@@ -1,5 +1,7 @@
 # wea.py
 
+[![Documentation](https://readthedocs.org/projects/wea/badge/?version=latest)](https://wea.readthedocs.io/) [![Build Status](https://github.com/casabre/wea/actions/workflows/tests.yml/badge.svg)](https://github.com/casabre/wea/actions/) [![PyPI Versions](https://img.shields.io/pypi/pyversions/wea.svg)](https://pypi.python.org/pypi/wea) ![PyPI - Downloads](https://img.shields.io/pypi/dm/wea)  [![PyPI Status](https://img.shields.io/pypi/status/wea.svg)](https://pypi.python.org/pypi/wea) [![PyPI License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
 ## What is wea?
 
 Giving the package a meaning - wea stands for Wrapped Exchange Array. If you want to share array-packed data with different processes, remote nodes or different language executables ( yes, that's the vision ), wea is aiming to be a lean, lightweight and convenient alternative to [Protocol Buffers](https://developers.google.com/protocol-buffers) and Co.

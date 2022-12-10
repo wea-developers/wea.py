@@ -1,6 +1,6 @@
 # wea.py
 
-[![Documentation](https://readthedocs.org/projects/wea/badge/?version=latest)](https://wea.readthedocs.io/) [![Build Status](https://github.com/casabre/wea/actions/workflows/tests.yml/badge.svg)](https://github.com/casabre/wea/actions/) [![PyPI Versions](https://img.shields.io/pypi/pyversions/wea.svg)](https://pypi.python.org/pypi/wea) ![PyPI - Downloads](https://img.shields.io/pypi/dm/wea)  [![PyPI Status](https://img.shields.io/pypi/status/wea.svg)](https://pypi.python.org/pypi/wea) [![PyPI License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Documentation](https://readthedocs.org/projects/wea/badge/?version=latest)](https://wea.readthedocs.io/) [![Build Status](https://github.com/casabre/wea.py/actions/workflows/tests.yml/badge.svg)](https://github.com/casabre/wea.py/actions/) [![PyPI Versions](https://img.shields.io/pypi/pyversions/wea.svg)](https://pypi.python.org/pypi/wea) ![PyPI - Downloads](https://img.shields.io/pypi/dm/wea)  [![PyPI Status](https://img.shields.io/pypi/status/wea.svg)](https://pypi.python.org/pypi/wea) [![PyPI License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 ## What is wea?
 
